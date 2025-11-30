@@ -1,8 +1,10 @@
 libewf is a library to access the Expert Witness Compression Format (EWF).
 
-This is a fork that adds FUSE-T support for macOS. FUSE-T is a kext-less
-implementation of FUSE for macOS that uses an NFS v4 local server instead
-of a kernel extension, making it compatible with modern macOS versions.
+This is a fork that adds modern filesystem mounting support:
+
+* macOS: FUSE-T support (kext-less FUSE via NFS v4, compatible with
+  macOS 10.15+)
+* Windows: Dokany 2.x support (user-mode filesystem driver)
 
 Project information:
 
@@ -36,7 +38,6 @@ Other features:
 
 Work in progress:
 
-* Dokan library support (experimental)
 * Python bindings (including Python 3 support)
 * write EWF2-Ex01 support
 * Multi-threading support
@@ -98,4 +99,48 @@ Usage:
     ewfmount image.E01 /path/to/mountpoint
 
 For more information about FUSE-T, see: https://www.fuse-t.org/
+
+Building on Windows with Dokany
+===============================
+
+This fork includes support for Dokany, enabling ewfmount on Windows.
+Dokany is a user-mode file system driver that provides FUSE-like
+functionality for Windows.
+
+Prerequisites:
+
+1. Install Dokany 2.x from: https://github.com/dokan-dev/dokany/releases
+   (Current version: 2.3.0)
+
+2. Install Visual Studio 2019 or later with C++ workload
+
+3. Clone or download the Dokany source/SDK for header files
+
+Building:
+
+1. Open msvscpp/libewf.sln in Visual Studio
+
+2. Ensure the Dokany include path is correct in the ewfmount project:
+   - Right-click ewfmount project -> Properties
+   - C/C++ -> Additional Include Directories
+   - Should point to your Dokany include folder
+
+3. Ensure the Dokany library path is correct:
+   - Linker -> Additional Library Directories
+   - Should point to your Dokany lib folder
+
+4. Build the solution (Release/x64 recommended)
+
+The ewfmount.exe will be in msvscpp/Release/ or msvscpp/x64/Release/
+
+Usage:
+
+    ewfmount.exe image.E01 X:
+
+Where X: is an available drive letter.
+
+Note: The Visual Studio project files (.vcproj) are in VS 2008 format.
+You may need to let Visual Studio upgrade them when first opening.
+
+For more information about Dokany, see: https://dokan-dev.github.io/
 
