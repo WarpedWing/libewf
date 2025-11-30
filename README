@@ -103,44 +103,88 @@ For more information about FUSE-T, see: https://www.fuse-t.org/
 Building on Windows with Dokany
 ===============================
 
-This fork includes support for Dokany, enabling ewfmount on Windows.
+This fork includes support for Dokany 2.x, enabling ewfmount on Windows.
 Dokany is a user-mode file system driver that provides FUSE-like
 functionality for Windows.
 
 Prerequisites:
 
-1. Install Dokany 2.x from: https://github.com/dokan-dev/dokany/releases
-   (Current version: 2.3.0)
+1. Install Visual Studio 2022 or later with "Desktop development with C++"
 
-2. Install Visual Studio 2019 or later with C++ workload
+2. Install Dokany 2.x driver from: https://github.com/dokan-dev/dokany/releases
 
-3. Clone or download the Dokany source/SDK for header files
+3. Download Dokany source for SDK headers:
+   https://github.com/dokan-dev/dokany
+   Extract to a folder alongside libewf (e.g., ..\dokany-master)
+
+4. Build or obtain the Dokany library (dokan2.lib):
+   Either build from source or extract from the Dokany installer.
+   Place in ..\dokan\x64\Release\dokan2.lib relative to libewf.
+
+Expected folder structure:
+
+    parent-folder/
+    ├── libewf/           # This repository
+    ├── dokany-master/    # Dokany source (for headers)
+    │   ├── dokan/        # Header files
+    │   └── sys/          # Additional headers
+    ├── dokan/            # Dokany libraries
+    │   └── x64/
+    │       └── Release/
+    │           └── dokan2.lib
+    ├── bzip2/            # bzip2 source (downloaded by syncbzip2.ps1)
+    └── zlib/             # zlib source (downloaded by synczlib.ps1)
 
 Building:
 
-1. Open msvscpp/libewf.sln in Visual Studio
+1. Open PowerShell in the libewf directory and run the sync scripts:
 
-2. Ensure the Dokany include path is correct in the ewfmount project:
-   - Right-click ewfmount project -> Properties
-   - C/C++ -> Additional Include Directories
-   - Should point to your Dokany include folder
+    .\synclibs.ps1
+    .\synczlib.ps1
+    .\syncbzip2.ps1
 
-3. Ensure the Dokany library path is correct:
-   - Linker -> Additional Library Directories
-   - Should point to your Dokany lib folder
+2. Generate required header files from templates. Run these PowerShell
+   commands (or create them manually from the .h.in files):
 
-4. Build the solution (Release/x64 recommended)
+    # include/libewf/types.h
+    (Get-Content include\libewf\types.h.in) -replace '@PACKAGE@','libewf' | Set-Content include\libewf\types.h
 
-The ewfmount.exe will be in msvscpp/Release/ or msvscpp/x64/Release/
+    # include/libewf/features.h
+    (Get-Content include\libewf\features.h.in) -replace '@LIBEWF_HAVE_WIDE_CHARACTER_TYPE@','1' -replace '@LIBEWF_HAVE_MULTI_THREAD_SUPPORT@','1' | Set-Content include\libewf\features.h
+
+    # include/libewf/definitions.h
+    (Get-Content include\libewf\definitions.h.in) -replace '@VERSION@','20251103' | Set-Content include\libewf\definitions.h
+
+    # common/types.h
+    (Get-Content common\types.h.in) -replace '@PACKAGE@','libewf' | Set-Content common\types.h
+
+    # libewf/libewf_definitions.h
+    (Get-Content libewf\libewf_definitions.h.in) -replace '@VERSION@','20251103' | Set-Content libewf\libewf_definitions.h
+
+    # libewf/libewf.rc
+    (Get-Content libewf\libewf.rc.in) -replace '@VERSION@','20251103' | Set-Content libewf\libewf.rc
+
+3. Open msvscpp/libewf.sln in Visual Studio 2022
+
+4. Select Release | x64 configuration
+
+5. Build the bzip2 project first (right-click -> Build)
+
+6. Build the ewfmount project
+
+7. Copy the bzip2 DLL to the output folder:
+
+    copy msvscpp\bzip2\x64\Release\bzip2.dll msvscpp\ewfmount\x64\Release\LIBBZ2.dll
+
+The ewfmount.exe will be in msvscpp/ewfmount/x64/Release/
 
 Usage:
 
     ewfmount.exe image.E01 X:
 
-Where X: is an available drive letter.
-
-Note: The Visual Studio project files (.vcproj) are in VS 2008 format.
-You may need to let Visual Studio upgrade them when first opening.
+Where X: is an available drive letter. The mounted drive will contain
+a raw disk image file (e.g., "ewf1") that can be accessed by forensic
+tools or mounted with additional filesystem drivers.
 
 For more information about Dokany, see: https://dokan-dev.github.io/
 
