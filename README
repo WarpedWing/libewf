@@ -1,9 +1,14 @@
 libewf is a library to access the Expert Witness Compression Format (EWF).
 
+This is a fork that adds FUSE-T support for macOS. FUSE-T is a kext-less
+implementation of FUSE for macOS that uses an NFS v4 local server instead
+of a kernel extension, making it compatible with modern macOS versions.
+
 Project information:
 
 * Status: experimental
 * Licence: LGPLv3+
+* Fork maintainer: WarpedWing Labs (https://github.com/WarpedWing)
 
 Read or write supported EWF formats:
 
@@ -63,4 +68,34 @@ For more information see:
 
 * Project documentation: https://github.com/libyal/libewf/wiki/Home
 * How to build from source: https://github.com/libyal/libewf/wiki/Building
+
+Building on macOS with FUSE-T
+=============================
+
+This fork supports FUSE-T for mounting EWF images on modern macOS systems
+(10.15+) without requiring kernel extensions.
+
+Prerequisites:
+
+    brew install --cask fuse-t
+    brew install autoconf automake libtool pkg-config
+
+Building:
+
+    ./synclibs.sh
+    ./autogen.sh
+    PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH ./configure
+    make
+    sudo make install
+
+The configure script will automatically detect FUSE-T and enable ewfmount
+support. You can verify FUSE-T was detected by checking the configure output:
+
+    FUSE support:                             libfuse_t
+
+Usage:
+
+    ewfmount image.E01 /path/to/mountpoint
+
+For more information about FUSE-T, see: https://www.fuse-t.org/
 

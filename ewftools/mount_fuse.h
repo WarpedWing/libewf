@@ -39,8 +39,14 @@
 
 #endif /* !defined( FUSE_USE_VERSION ) && !defined( CYGFUSE ) */
 
+/* Include paths:
+ * - libfuse (v2): pkg-config provides -I.../fuse, use <fuse.h>
+ * - libfuse3: headers in fuse3/ subdirectory
+ * - libosxfuse: headers in osxfuse/ subdirectory
+ * - libfuse-t: pkg-config provides -I.../fuse, use <fuse.h>
+ */
 #if defined( HAVE_LIBFUSE )
-#include <fuse/fuse.h>
+#include <fuse.h>
 #elif defined( HAVE_LIBFUSE3 )
 #include <fuse3/fuse.h>
 #elif defined( HAVE_LIBOSXFUSE )

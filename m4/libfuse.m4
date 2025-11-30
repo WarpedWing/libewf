@@ -1,6 +1,11 @@
 dnl Checks for libfuse required headers and functions
 dnl
-dnl Version: 20240413
+dnl Version: 20241129
+dnl
+dnl Added support for:
+dnl - libfuse-t (macOS kext-less FUSE implementation via NFS)
+dnl   Install via: brew install --cask fuse-t
+dnl   See: https://www.fuse-t.org/
 
 dnl Function to detect if libfuse is available
 dnl ac_libfuse_dummy is used to prevent AC_CHECK_LIB adding unnecessary -l<library> arguments
@@ -39,6 +44,17 @@ AC_DEFUN([AX_LIBFUSE_CHECK_LIB],
             [ac_cv_libfuse=no])
           ])
 
+        dnl Check for fuse-t (macOS kext-less FUSE implementation)
+        dnl fuse-t provides FUSE v2 API compatibility
+        AS_IF(
+          [test "x$ac_cv_libfuse" = xno],
+          [PKG_CHECK_MODULES(
+            [fuse_t],
+            [fuse-t >= 1.0],
+            [ac_cv_libfuse=libfuse_t],
+            [ac_cv_libfuse=no])
+          ])
+
         AS_IF(
           [test "x$ac_cv_libfuse" = xlibfuse3],
           [ac_cv_libfuse_CPPFLAGS="$pkg_cv_fuse3_CFLAGS -D_FILE_OFFSET_BITS=64"
@@ -48,14 +64,20 @@ AC_DEFUN([AX_LIBFUSE_CHECK_LIB],
           [test "x$ac_cv_libfuse" = xlibfuse],
           [ac_cv_libfuse_CPPFLAGS="$pkg_cv_fuse_CFLAGS -D_FILE_OFFSET_BITS=64"
           ac_cv_libfuse_LIBADD="$pkg_cv_fuse_LIBS"])
+
+        dnl fuse-t uses FUSE v2 API, set HAVE_LIBFUSE for compatibility
+        AS_IF(
+          [test "x$ac_cv_libfuse" = xlibfuse_t],
+          [ac_cv_libfuse_CPPFLAGS="$pkg_cv_fuse_t_CFLAGS -D_FILE_OFFSET_BITS=64"
+          ac_cv_libfuse_LIBADD="$pkg_cv_fuse_t_LIBS"])
         ])
       ])
 
     backup_CPPFLAGS="$CPPFLAGS"
 
-    dnl Check for libfuse and libfuse3
+    dnl Check for libfuse and libfuse3 (skip if already detected via pkg-config)
     AS_IF(
-      [test "x$ac_cv_libfuse" != xlibfuse && test "x$ac_cv_libfuse" != xlibfuse3],
+      [test "x$ac_cv_libfuse" != xlibfuse && test "x$ac_cv_libfuse" != xlibfuse3 && test "x$ac_cv_libfuse" != xlibfuse_t],
       [dnl Check for headers
 
       CPPFLAGS="$backup_CPPFLAGS -DFUSE_USE_VERSION=30"
@@ -184,6 +206,14 @@ AC_DEFUN([AX_LIBFUSE_CHECK_LIB],
       [1],
       [Define to 1 if you have the 'osxfuse' library (-losxfuse).])
     ])
+  dnl fuse-t uses FUSE v2 API, so define HAVE_LIBFUSE for code compatibility
+  AS_IF(
+    [test "x$ac_cv_libfuse" = xlibfuse_t],
+    [AC_DEFINE(
+      [HAVE_LIBFUSE],
+      [1],
+      [Define to 1 if you have the 'fuse' library (-lfuse) or compatible (fuse-t).])
+    ])
 
   AS_IF(
     [test "x$ac_cv_libfuse" != xno],
@@ -238,6 +268,12 @@ AC_DEFUN([AX_LIBFUSE_CHECK_ENABLE],
     [AC_SUBST(
       [ax_libfuse_pc_libs_private],
       [-losxfuse])
+    ])
+  AS_IF(
+    [test "x$ac_cv_libfuse" = xlibfuse_t],
+    [AC_SUBST(
+      [ax_libfuse_pc_libs_private],
+      [-lfuse-t])
     ])
 
   AS_IF(
