@@ -226,6 +226,24 @@ stamp-h[1-9]
 /tests/notify_stream.log
 /tests/tmp*
 
+# Visual Studio / MSVC build artifacts
+/msvscpp/.vs/
+/msvscpp/Backup/
+/msvscpp/UpgradeLog.htm
+/msvscpp/**/x64/
+/msvscpp/**/Win32/
+/msvscpp/**/Release/
+/msvscpp/**/VSDebug/
+/msvscpp/**/*.tlog/
+/msvscpp/**/*.user
+*.dll
+*.exe
+*.exp
+*.ilk
+*.iobj
+*.ipdb
+*.pdb
+
 # Local library dependencies specific files
 /libbfio
 /libcaes
