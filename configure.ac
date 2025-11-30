@@ -1,9 +1,6 @@
-AC_PREREQ([2.71])
+AC_PREREQ([2.72])
 
-AC_INIT(
-  [libewf],
-  [20251103],
-  [joachim.metz@gmail.com])
+AC_INIT([libewf],[20251103],[joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
   [include/libewf.h.in])
@@ -21,7 +18,6 @@ LT_INIT([win32-dll])
 
 dnl Checks for programs
 AC_PROG_CC
-AC_PROG_GCC_TRADITIONAL
 AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
